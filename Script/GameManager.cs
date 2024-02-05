@@ -2,23 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    [SerializeField] GameObject LeftObject, RightObject, UpObject, DownObject;
-    [SerializeField] GameObject TargetObject, GameOverPanel;
-    public bool TargetObjectBool;
-    [SerializeField] Vector3 StartPos, DragPos;
-    [SerializeField] GameObject Player;
-    [SerializeField] GameObject Paddel;
-    public float minZRotation = -90f;
-    public float maxZRotation = 90f;
-    [SerializeField] List<GameObject> AlreadyBrick;
-    bool FirstRelease;
+    public GameObject MainBall, Padel, TargetObject;
+    public Vector3 StartPos, DragPos,currentPos;
+    public float currentPosX, currentPosY;
+    public bool TargetObjectBool, FirstRelease;
+    [SerializeField] GameObject UpObject, DownObject, LeftObject, RightObject;
+    public List<GameObject> AlreadyExitsBrick;
+    public GameObject GameOverPanelLose, GameOverPanelWin;
+
+
     private void Awake()
     {
         Instance = this;
+       
+    }
+    private void Start()
+    {
+        MainBall.GetComponent<CircleCollider2D>().enabled = false;
+        MainBall.GetComponent<Rigidbody2D>().gravityScale = 0;
+
         Vector2 pos = new Vector2(Screen.width, Screen.height);
         Vector2 ScreenSize = Camera.main.ScreenToWorldPoint(pos);
 
@@ -36,10 +43,10 @@ public class GameManager : MonoBehaviour
 
         DownObject.GetComponent<BoxCollider2D>().size = new Vector2(ScreenSize.x * 2, 1);
         DownObject.transform.position = new Vector2(0, -ScreenSize.y - DownObject.GetComponent<BoxCollider2D>().size.y / 2);
+        DownObject.tag = "DownObject";
+
 
     }
-    Vector3 currentPos;
-    float currentPosY, currentPosX;
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
@@ -49,14 +56,14 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetMouseButton(0))
         {
-           
-                DragPos = StartPos - Input.mousePosition;
-                TargetObject.gameObject.transform.GetChild(0).Rotate(new Vector3(0, 0, DragPos.x * 0.4f));
-                StartPos = Input.mousePosition;
-                currentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                currentPosX = Mathf.Clamp(currentPos.x, -3, 3);
-                currentPosY = Mathf.Abs(currentPos.y);
-            
+
+            DragPos = StartPos - Input.mousePosition;
+            TargetObject.gameObject.transform.GetChild(0).Rotate(new Vector3(0, 0, DragPos.x * 0.4f));
+            StartPos = Input.mousePosition;
+            currentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            currentPosX = Mathf.Clamp(currentPos.x, -3, 3);
+            currentPosY = Mathf.Abs(currentPos.y);
+
         }
         if (Input.GetMouseButtonUp(0))
         {
@@ -64,27 +71,44 @@ public class GameManager : MonoBehaviour
             {
                 if (TargetObjectBool == false)
                 {
-                    Player.transform.up = new Vector3(currentPosX, currentPosY, 0);
+                    MainBall.transform.up = new Vector3(currentPosX, currentPosY, 0);
                     PushBall();
                     TargetObject.SetActive(false);
                     TargetObjectBool = true;
                 }
                 TargetObject.SetActive(false);
-                Player.GetComponent<Rigidbody2D>().gravityScale = 1;
-                Paddel.gameObject.transform.GetComponent<BoxCollider2D>().enabled = true;
+                MainBall.GetComponent<Rigidbody2D>().gravityScale = 0;
+                MainBall.gameObject.transform.GetComponent<CircleCollider2D>().enabled = true;
                 Vector2 TargetPosition = new Vector2(StartPos.x, StartPos.y).normalized;
                 Debug.Log(TargetPosition);
 
-                Player.GetComponent<Rigidbody2D>().AddForce(TargetPosition * 10f, ForceMode2D.Impulse);
+                MainBall.GetComponent<Rigidbody2D>().AddForce(TargetPosition * 10f, ForceMode2D.Impulse);
                 FirstRelease = true;
             }
+                    TargetObjectBool = true;
         }
 
-
-        if (AlreadyBrick.Count == 0)
+        if(AlreadyExitsBrick.Count == 0)
         {
-            GameOverPanel.SetActive(false);
+            GameOverPanelWin.SetActive(true);
+            MainBall.GetComponent<Rigidbody2D>().gravityScale = 0;
+            Padel.GetComponent<BoxCollider2D>().enabled = false;
         }
+    }
+
+    public void NextButton()
+    {
+        SceneManager.LoadScene("AllLevel");
+    }
+
+    public void PrevButton()
+    {
+        SceneManager.LoadScene("AllLevel");
+    }
+
+    public void ExitButton()
+    {
+        Application.Quit();
     }
 
     int PushSpeed;
@@ -93,11 +117,11 @@ public class GameManager : MonoBehaviour
         PushSpeed = 200;
         if (currentPosY > 1.2f || currentPosX > 1.2f)
         {
-            PushSpeed = 250;
+            PushSpeed = 220;
         }
         else if (currentPosY < 0.5f || currentPosX < 0.5f)
         {
-            PushSpeed = 250;
+            PushSpeed = 220;
         }
         else
         {
@@ -105,6 +129,7 @@ public class GameManager : MonoBehaviour
         }
 
         Vector2 PushDirection = new Vector2(currentPosX, currentPosY).normalized;
-        Player.GetComponent<Rigidbody2D>().AddForce(PushDirection * PushSpeed);
+        MainBall.GetComponent<Rigidbody2D>().AddForce(PushDirection * PushSpeed);
     }
 }
+  

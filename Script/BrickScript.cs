@@ -8,23 +8,23 @@ public class BrickScript : MonoBehaviour
     [SerializeField] float Health;
     [SerializeField] int SwitchNo;
     [SerializeField] Sprite BrickCrackImage;
-
+    [SerializeField] ParticleSystem DestroyParical;
     private void Start()
     {
         this.gameObject.SetActive(true);
         if (this.gameObject.transform.tag == "Level1Brick")
         {
-            Health =  1f;
+            Health = 1f;
             SwitchNo = 1;
         }
         if (this.gameObject.transform.tag == "Level2Brick")
         {
-            Health =  2f;
+            Health = 2f;
             SwitchNo = 2;
         }
         if (this.gameObject.transform.tag == "Level3Brick")
         {
-            Health =  3f;
+            Health = 3f;
             SwitchNo = 3;
         }
         if (this.gameObject.transform.tag == "Level4Brick")
@@ -37,6 +37,7 @@ public class BrickScript : MonoBehaviour
             Health = 5;
             SwitchNo = 5;
         }
+                        //DestroyParical.Play();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -47,11 +48,14 @@ public class BrickScript : MonoBehaviour
             {
                 case 1:
                     Health -= 0.5f;
-                    if(Health == 0)
+                    if (Health == 0)
                     {
                         Destroy(this.gameObject);
+                        //DestroyParical.Play();
+                        Instantiate(DestroyParical, collision.contacts[0].point,Quaternion.identity);
+                        GameManager.Instance.AlreadyExitsBrick.Remove(this.gameObject);
                     }
-                    if(Health == 0.5f)
+                    if (Health == 0.5f)
                     {
                         this.gameObject.GetComponent<SpriteRenderer>().sprite = BrickCrackImage;
                     }
@@ -61,6 +65,9 @@ public class BrickScript : MonoBehaviour
                     if (Health == 0)
                     {
                         Destroy(this.gameObject);
+                        //DestroyParical.Play();
+                        GameManager.Instance.AlreadyExitsBrick.Remove(this.gameObject);
+
                     }
                     if (Health == 1f)
                     {
@@ -72,6 +79,9 @@ public class BrickScript : MonoBehaviour
                     if (Health == 0)
                     {
                         Destroy(this.gameObject);
+                        //DestroyParical.Play();
+                        GameManager.Instance.AlreadyExitsBrick.Remove(this.gameObject);
+
                     }
                     if (Health == 1f)
                     {
@@ -83,6 +93,9 @@ public class BrickScript : MonoBehaviour
                     if (Health == 0)
                     {
                         Destroy(this.gameObject);
+                        //DestroyParical.Play();
+                        GameManager.Instance.AlreadyExitsBrick.Remove(this.gameObject);
+
                     }
                     if (Health == 1f)
                     {
@@ -91,10 +104,13 @@ public class BrickScript : MonoBehaviour
                     break;
                 case 5:
                     Health -= 1;
-                   
+
                     if (Health == 0)
                     {
+                        //DestroyParical.Play();
                         Destroy(this.gameObject);
+                        GameManager.Instance.AlreadyExitsBrick.Remove(this.gameObject);
+
                     }
                     if (Health == 1f)
                     {
